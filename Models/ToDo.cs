@@ -1,4 +1,4 @@
-﻿namespace WebApplication1.Models
+﻿namespace DotNetCoreAssignments.Models
 {
     public class ToDo
     {

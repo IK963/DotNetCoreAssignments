@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using WebApplication1.Models;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using DotNetCoreAssignments.Models;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace WebApplication1.Controllers
+namespace DotNetCoreAssignments.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ToDoController : ControllerBase
@@ -38,6 +40,7 @@ namespace WebApplication1.Controllers
 
         // POST api/<ToDoController>
         [HttpPost]
+        [Authorize(Roles = UserRoles.User)]
         public ActionResult<ToDo> Post([FromBody] ToDo item)
         {
             if (item == null)
@@ -53,6 +56,7 @@ namespace WebApplication1.Controllers
 
         // PUT api/<ToDoController>/5
         [HttpPut("{id}")]
+        [Authorize(Roles = UserRoles.User)]
         public IActionResult Put(int id, [FromBody] ToDo item)
         {
             var existingItem = _repository.GetById(id);
@@ -75,6 +79,7 @@ namespace WebApplication1.Controllers
 
         // DELETE api/<ToDoController>/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = UserRoles.Admin)]
         public IActionResult Delete(int id)
         {
             var existingItem = _repository.GetById(id);
