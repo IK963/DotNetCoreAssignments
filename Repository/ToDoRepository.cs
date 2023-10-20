@@ -1,24 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using WebApplication1.Models;
+﻿using DotNetCoreAssignments.Models;
 
 public class ToDoRepository
 {
     #region members
 
-    private readonly List<ToDo> _todoList = new List<ToDo>();
+    private readonly ApplicationDbContext _context;
 
     #endregion
 
-    public IEnumerable<ToDo> GetAll()
+    public ToDoRepository(ApplicationDbContext context)
     {
-        return _todoList;
+        _context = context;
     }
 
-    public ToDo GetById(int id)
+    public IEnumerable<ToDo> GetAll()
     {
-        return _todoList.FirstOrDefault(ToDo => ToDo.Id == id);
+        return _context.ToDo.ToList();
+    }
+
+    public ToDo GetById(Guid id)
+    {
+        return _context.ToDo.FirstOrDefault(ToDo => ToDo.Id == id) ?? null;
     }
 
     public ToDo Create(ToDo item)
@@ -27,13 +29,20 @@ public class ToDoRepository
         {
             throw new ArgumentNullException(nameof(ToDo));
         }
+        try
+        {
+            item.Id = Guid.NewGuid();
 
-        int maxItem = _todoList != null && _todoList.Count > 0 ? _todoList.Max(x => x.Id) + 1 : 1;
-        item.Id = maxItem;
+            if (_context.ToDo != null)
+                _context.ToDo.Add(item);
 
-        if (_todoList != null)
-            _todoList.Add(item);
-        return item;
+            _context.SaveChanges(); // Save the changes to the database
+            return item;
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
     }
 
     public void Update(ToDo item)
@@ -42,21 +51,41 @@ public class ToDoRepository
         {
             throw new ArgumentNullException(nameof(item));
         }
-
-        var toDoItem = _todoList.FirstOrDefault(ToDo => ToDo.Id == item.Id);
-        if (toDoItem != null)
+        try
         {
-            toDoItem.Title = item.Title;
-            toDoItem.IsCompleted = item.IsCompleted;
+            if (_context.ToDo != null)
+            {
+                var toDoItem = _context.ToDo.FirstOrDefault(ToDo => ToDo.Id == item.Id);
+                if (toDoItem != null)
+                {
+                    toDoItem.Title = item.Title;
+                    toDoItem.IsCompleted = item.IsCompleted;
+                }
+                _context.SaveChanges();
+            }
+            else
+                throw new ArgumentNullException(nameof(item));
+        }
+        catch (Exception ex)
+        {
+            throw ex;
         }
     }
 
-    public void Delete(int id)
+    public void Delete(Guid id)
     {
-        var item = _todoList.FirstOrDefault(ToDo => ToDo.Id == id);
-        if (item != null)
+        try
         {
-            _todoList.Remove(item);
+            var item = _context.ToDo.FirstOrDefault(ToDo => ToDo.Id == id);
+            if (item != null)
+            {
+                _context.ToDo.Remove(item);
+            }
+            _context.SaveChanges();
+        }
+        catch (Exception ex)
+        {
+            throw ex;
         }
     }
 }

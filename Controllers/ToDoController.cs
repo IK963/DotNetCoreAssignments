@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using WebApplication1.Models;
+﻿using DotNetCoreAssignments.Models;
+using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -26,7 +26,7 @@ namespace WebApplication1.Controllers
 
         // GET api/<ToDoController>/id
         [HttpGet("{id}")]
-        public ActionResult<ToDo> GetById(int id)
+        public ActionResult<ToDo> GetById(Guid id)
         {
             var item = _repository.GetById(id);
             if (item == null)
@@ -45,15 +45,22 @@ namespace WebApplication1.Controllers
                 return BadRequest("Invalid data");
             }
 
-            var addedItem = _repository.Create(item);
+            try
+            {
+                var addedItem = _repository.Create(item);
 
-            return CreatedAtAction(nameof(GetById), new { id = addedItem.Id }, item);
+                return CreatedAtAction(nameof(GetById), new { id = addedItem.Id }, item);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while processing the request. Please try again later." + ex.Message);
+            }
         }
 
 
         // PUT api/<ToDoController>/5
         [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] ToDo item)
+        public IActionResult Put(Guid id, [FromBody] ToDo item)
         {
             var existingItem = _repository.GetById(id);
             
@@ -75,17 +82,25 @@ namespace WebApplication1.Controllers
 
         // DELETE api/<ToDoController>/5
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public IActionResult Delete(Guid id)
         {
-            var existingItem = _repository.GetById(id);
-
-            if (existingItem == null)
+            try
             {
-                return NotFound("Todo not found");
-            }
+                var existingItem = _repository.GetById(id);
 
-            _repository.Delete(id);
-            return Ok();
+                if (existingItem == null)
+                {
+                    return NotFound("Todo not found");
+                }
+
+                _repository.Delete(id);
+                return Ok();
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while processing the request. Please try again later." + ex.Message);
+            }
         }
 
     }
