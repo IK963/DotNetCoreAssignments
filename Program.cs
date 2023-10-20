@@ -16,7 +16,12 @@ var connectionString = configuration.GetConnectionString("ConnStr");
 // Add services to the container.
 
 builder.Services.AddControllers();
-builder.Services.AddSingleton<ToDoRepository>();
+builder.Services.AddScoped<ToDoRepository>();
+//builder.Services.AddSingleton<ToDoRepository>(provider =>
+//{
+//    var dbContext = provider.GetRequiredService<ApplicationDbContext>();
+//    return new ToDoRepository(dbContext);
+//});
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
