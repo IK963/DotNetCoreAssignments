@@ -92,7 +92,7 @@ namespace DotNetCoreAssignments.Controllers
             if (!await roleManager.RoleExistsAsync(UserRoles.User))
                 await roleManager.CreateAsync(new IdentityRole(UserRoles.User));
 
-            if (await roleManager.RoleExistsAsync(UserRoles.Admin))
+            if (await roleManager.RoleExistsAsync(UserRoles.User))
             {
                 await userManager.AddToRoleAsync(user, UserRoles.User);
             }
