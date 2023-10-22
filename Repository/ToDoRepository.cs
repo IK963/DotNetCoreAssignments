@@ -1,4 +1,5 @@
 ﻿using DotNetCoreAssignments.Models;
+using Microsoft.AspNetCore.JsonPatch;
 
 public class ToDoRepository
 {
@@ -88,4 +89,26 @@ public class ToDoRepository
             throw ex;
         }
     }
+
+    public void Patch(Guid id, JsonPatchDocument<ToDo> patchDoc)
+    {
+        try
+        {
+            var item = _context.ToDo.FirstOrDefault(ToDo => ToDo.Id == id);
+
+            if (item == null)
+            {
+                throw new KeyNotFoundException();
+            }
+
+            patchDoc.ApplyTo(item);
+
+            _context.SaveChanges();
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
+    }
+
 }
