@@ -25,7 +25,7 @@ public class ToDoRepository
         return _context.ToDo.FirstOrDefault(ToDo => ToDo.Id == id) ?? null;
     }
 
-    public ToDo Create(ToDo item)
+    public ToDo Create(ToDo item, string createdBy)
     {
         if (item == null)
         {
@@ -34,6 +34,7 @@ public class ToDoRepository
         try
         {
             item.Id = Guid.NewGuid();
+            item.UserName = createdBy;
 
             if (_context.ToDo != null)
                 _context.ToDo.Add(item);

@@ -8,6 +8,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Text;
+using DotNetCoreAssignments.Models.Policies;
+using DotNetCoreAssignments.Handlers;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -17,11 +20,6 @@ var connectionString = configuration.GetConnectionString("ConnStr");
 
 builder.Services.AddControllers();
 builder.Services.AddScoped<ToDoRepository>();
-//builder.Services.AddSingleton<ToDoRepository>(provider =>
-//{
-//    var dbContext = provider.GetRequiredService<ApplicationDbContext>();
-//    return new ToDoRepository(dbContext);
-//});
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
@@ -36,8 +34,6 @@ builder.Services.AddAuthentication(options =>
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-
-// Adding Jwt Bearer
 .AddJwtBearer(options =>
 {
     options.SaveToken = true;
@@ -52,6 +48,13 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+//Adding Authorization
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(CustomPolicies.SameUserOrAdmin, policy => policy.Requirements.Add(new SameUserOrAdminRequirement()));
+});
+
+builder.Services.AddSingleton<IAuthorizationHandler, CanAccessResourcesHandler>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

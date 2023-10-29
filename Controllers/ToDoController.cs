@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using DotNetCoreAssignments.Models;
 using Microsoft.EntityFrameworkCore;
+using DotNetCoreAssignments.Models.Policies;
+using System.Security.Claims;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -19,16 +21,34 @@ namespace DotNetCoreAssignments.Controllers
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
+        private string GetLoggedInUserId()
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            if (identity != null)
+            {
+                return identity.Name;
+            }
+            return null;
+        }
+
         // GET: api/<ToDoController>
         [HttpGet]
         public ActionResult<IEnumerable<ToDo>> GetAll()
         {
-            var ToDos = _repository.GetAll();
+            IEnumerable<ToDo> ToDos = new List<ToDo>();
+            if (HttpContext.User.Identity != null && HttpContext.User.IsInRole(UserRoles.Admin))
+                ToDos = _repository.GetAll();
+            else
+            {
+                ToDos = _repository.GetAll();
+                ToDos = ToDos.Where(x => (x.UserName != null && x.UserName.Equals(GetLoggedInUserId())));
+            }
             return Ok(ToDos);
         }
 
         // GET api/<ToDoController>/id
         [HttpGet("{id}")]
+        [Authorize(Policy = CustomPolicies.SameUserOrAdmin)]
         public ActionResult<ToDo> GetById(Guid id)
         {
             var item = _repository.GetById(id);
@@ -41,7 +61,6 @@ namespace DotNetCoreAssignments.Controllers
 
         // POST api/<ToDoController>
         [HttpPost]
-        [Authorize(Roles = UserRoles.User)]
         public ActionResult<ToDo> Post([FromBody] ToDo item)
         {
             if (item == null)
@@ -50,7 +69,8 @@ namespace DotNetCoreAssignments.Controllers
             }
             try
             {
-                var addedItem = _repository.Create(item);
+                var user = GetLoggedInUserId();
+                var addedItem = _repository.Create(item, GetLoggedInUserId());
 
                 return CreatedAtAction(nameof(GetById), new { id = addedItem.Id }, item);
             }
@@ -62,7 +82,7 @@ namespace DotNetCoreAssignments.Controllers
 
         // PUT api/<ToDoController>/5
         [HttpPut("{id}")]
-        [Authorize(Roles = UserRoles.User)]
+        [Authorize(Policy = CustomPolicies.SameUserOrAdmin)]
         public IActionResult Put(Guid id, [FromBody] ToDo item)
         {
             var existingItem = _repository.GetById(id);
@@ -86,7 +106,7 @@ namespace DotNetCoreAssignments.Controllers
 
         // DELETE api/<ToDoController>/5
         [HttpDelete("{id}")]
-        [Authorize(Roles = UserRoles.Admin)]
+        [Authorize(Policy = CustomPolicies.SameUserOrAdmin)]
         public IActionResult Delete(Guid id)
         {
             try
