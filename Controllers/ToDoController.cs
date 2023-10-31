@@ -4,6 +4,7 @@ using DotNetCoreAssignments.Models;
 using Microsoft.EntityFrameworkCore;
 using DotNetCoreAssignments.Models.Policies;
 using System.Security.Claims;
+using DotNetCoreAssignments.Enums;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -36,7 +37,7 @@ namespace DotNetCoreAssignments.Controllers
         public ActionResult<IEnumerable<ToDo>> GetAll()
         {
             IEnumerable<ToDo> ToDos = new List<ToDo>();
-            if (HttpContext.User.Identity != null && HttpContext.User.IsInRole(UserRoles.Admin))
+            if (HttpContext.User.Identity != null && HttpContext.User.IsInRole(UserRoles.Admin.ToString()))
                 ToDos = _repository.GetAll();
             else
             {

@@ -1,4 +1,5 @@
-﻿using DotNetCoreAssignments.Models;
+﻿using DotNetCoreAssignments.Enums;
+using DotNetCoreAssignments.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -87,15 +88,24 @@ namespace DotNetCoreAssignments.Controllers
                 }
                 return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed. " + sb });
             }
-            if (!await roleManager.RoleExistsAsync(UserRoles.Admin))
-                await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
-            if (!await roleManager.RoleExistsAsync(UserRoles.User))
-                await roleManager.CreateAsync(new IdentityRole(UserRoles.User));
+            if (!await roleManager.RoleExistsAsync(UserRoles.Admin.ToString()))
+                await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin.ToString()));
+            if (!await roleManager.RoleExistsAsync(UserRoles.User.ToString()))
+                await roleManager.CreateAsync(new IdentityRole(UserRoles.User.ToString()));
 
-            if (await roleManager.RoleExistsAsync(UserRoles.User))
+            if (await roleManager.RoleExistsAsync(UserRoles.User.ToString()))
             {
-                await userManager.AddToRoleAsync(user, UserRoles.User);
+                switch(registerUser.Role)
+                {
+                    case "User":
+                        await userManager.AddToRoleAsync(user, UserRoles.User.ToString());
+                        break;
+                    case "User1":
+                        await userManager.AddToRoleAsync(user, UserRoles.User1.ToString());
+                        break;
+                }
             }
+                
             return Ok(new Response { Status = "Success", Message = "User created successfully!" });
         }
 
@@ -123,14 +133,14 @@ namespace DotNetCoreAssignments.Controllers
                 }
                 return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed. " + sb });
             }
-            if (!await roleManager.RoleExistsAsync(UserRoles.Admin))
-                await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
-            if (!await roleManager.RoleExistsAsync(UserRoles.User))
-                await roleManager.CreateAsync(new IdentityRole(UserRoles.User));
+            if (!await roleManager.RoleExistsAsync(UserRoles.Admin.ToString()))
+                await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin.ToString()));
+            if (!await roleManager.RoleExistsAsync(UserRoles.User.ToString()))
+                await roleManager.CreateAsync(new IdentityRole(UserRoles.User.ToString()));
 
-            if (await roleManager.RoleExistsAsync(UserRoles.Admin))
+            if (await roleManager.RoleExistsAsync(UserRoles.Admin.ToString()))
             {
-                await userManager.AddToRoleAsync(user, UserRoles.Admin);
+                await userManager.AddToRoleAsync(user, UserRoles.Admin.ToString());
             }
 
             return Ok(new Response { Status = "Success", Message = "User created successfully!" });

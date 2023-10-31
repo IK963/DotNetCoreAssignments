@@ -1,10 +1,6 @@
-﻿using DotNetCoreAssignments.Models.Policies;
-using DotNetCoreAssignments.Models;
+﻿using DotNetCoreAssignments.Enums;
+using DotNetCoreAssignments.Models.Policies;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.EntityFrameworkCore;
-using System.Numerics;
-using System.Text.RegularExpressions;
 
 namespace DotNetCoreAssignments.Handlers
 {
@@ -12,9 +8,11 @@ namespace DotNetCoreAssignments.Handlers
     {
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, SameUserOrAdminRequirement requirement)
         {
-            if (context.User.Identity != null && context.User.IsInRole(UserRoles.Admin))
+            var roles = Enum.GetNames(typeof(UserRoles));
+
+            if (context.User.Identity != null && context.User.IsInRole(UserRoles.Admin.ToString()))
                 context.Succeed(requirement);
-            else if (context.User.Identity != null && (context.User.IsInRole(UserRoles.User) || context.User.IsInRole(UserRoles.Admin)))
+            else if (context.User.Identity != null && roles.Any(role => context.User.IsInRole(role)))
             {
                 // Access the HttpContext to retrieve the route data
                 var httpContext = (context.Resource as DefaultHttpContext)?.HttpContext;
