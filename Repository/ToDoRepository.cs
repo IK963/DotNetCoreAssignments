@@ -63,6 +63,8 @@ public class ToDoRepository
                 {
                     toDoItem.Title = item.Title;
                     toDoItem.IsCompleted = item.IsCompleted;
+                    toDoItem.CreatedDate = item.CreatedDate;
+                    toDoItem.UpdatedDate = item.UpdatedDate;
                 }
                 _context.SaveChanges();
             }
